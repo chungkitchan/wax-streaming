@@ -110,11 +110,7 @@
        $('#start').click(function(e){
          start();
        });
-    });
-    function start() {
-        const welcome_message = initChat();
-        writeMessage(welcome_message,'bot');
-        $('#chatbot').on('click', '#chatbot-submit', function(e) {
+       $('#chatbot').on('click', '#chatbot-submit', function(e) {
             console.log('Send button clicked!!');
             e.preventDefault();
             message = $('#chatbot-input').val();
@@ -137,8 +133,10 @@
                     console.log(data.partial_item.text);
                 } else if ("final_response" in data) {
                     if (!hasPartial) {
-                        console.log('In final_response, no partial_item, text: ',data.final_response.text);
-                        writeMessage(data.final_response,"bot");
+                        // console.log('In final_response, no partial_item, text: ',data.final_response.text);
+                        // console.log('In final_response, no partial_item, final_response: ',data.final_response);
+                        console.log('In final_response, no partial_item, text: ',data.final_response.output.generic[0].text);
+                        writeMessage(data.final_response.output.generic[0].text,"bot");
                     }
                     console.log('final_response received, close stream');
                     sse.close();
@@ -150,6 +148,11 @@
                 }
             });
         });
+    });
+    function start() {
+        $("#chatbot-message").empty();
+        const welcome_message = initChat();
+        writeMessage(welcome_message,'bot');
     }
 
         // scroll to the bottom of chat box
@@ -218,37 +221,6 @@
     // });
 
 </script>
-<!--
-<script>
-
-(function() {
-    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-    po.src = 'https://apis.google.com/js/plusone.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-})();
-
-!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
-
-(function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=205397789496743";
-    fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
-
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-19410112-1']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-
-</script>
--->
 
 </body>
 </html>

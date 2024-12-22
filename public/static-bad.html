@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Annoying Chatbot | A Simple jQuery Chatbot</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Best used for automated sales pitch or FAQ helper on site. This chatbot is built with jQuery, its super easy to extend and modified to fit your requirement.">
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="Annoying Chatbot | A Simple jQuery Chatbot" />
+    <meta property="og:description" content="Best used for automated sales pitch or FAQ helper on site. This chatbot is built with jQuery, its super easy to extend and modified to fit your requirement." />
+    <meta property="og:url" content="http://syaifulshahzinan.com/community/annoying-chatbot/" />
+    <meta property="og:site_name" content="Malaysia Wordpress Developer, Graphic Web Designer, Opencart, Custom CMS Theme Development" />
+    <meta property="og:type" content="product" />
+    <meta property="og:image" content="http://syaifulshahzinan.com/community/annoying-chatbot/screenshot.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="icon.png">
+    <link rel="apple-touch-icon-precomposed" href="icon.png">
+    <link rel="shortcut icon" href="icon.png">
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/chatbot.css">
+</head>
+<body>
+
+<div id="fb-root"></div>
+
+<div id="main-demo-body">
+    <div class="container">
+        <div class="demo-widget">
+            <div class="demo-widget-header">Watsonx Assistant Non Streaming Demo</div>
+            <div class="demo-widget-body">
+                <div id="chatbot">
+                    <div id="chatbot-message">
+                        <!--<p><span class="user">Bot: </span>Hello and welcome. Ready for the first riddle?</p>-->
+                    </div>
+                    <form action="">
+                        <div class="input-group">
+                            <input id="chatbot-input" type="text" class="form-control" placeholder="message..." autocomplete="off">
+                            <div class="input-group-btn">
+                                <button id="chatbot-submit" class="btn btn-default" type="submit">Send</button>
+                            </div>
+                        </div><!-- .input-group -->
+                    </form>
+                </div><!-- #chatbot -->
+            </div><!-- .demo-widget-body -->
+        </div><!-- #demo -->
+    </div><!-- .container -->
+</div><!-- #main-demo-body -->
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.cookie.js"></script>
+<script>
+    var session;
+    function getSession(){
+        var session;
+        $.ajax({
+            url: '/api/session',
+            contentType: 'application/json',
+            dataType: 'json',
+            type: 'POST',   
+            async: false,             
+            success: function (data) {session = data}
+        }); 
+        return session;
+    }
+
+    function initChat(){
+        console.log("in initChat() calling getSession()....");
+        session = getSession().session_id
+        console.log("got session: ",session);
+        const resp = sendMessage("",session);
+        return resp.output.generic[0].text;
+    }
+    function sendMessage(message,session){
+        var resp;
+        const payload = {message: message, session: session};
+        $.ajax({
+            url: '/api/message',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify(payload),
+            type: 'POST',   
+            async: false,             
+            success: function (data) {resp = data}
+        }); 
+        return resp;        
+    }
+    /*
+    function sendMessage(message,session){
+        return new Promise(function (resolve){
+            const payload = {message: message, session: session};
+            $.ajax({
+                url: '/api/message',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify(payload),
+                type: 'POST',   
+                async: false,             
+                success: function (data) {
+                    console.log(data);
+                    resolve(data)
+                }
+            }); 
+        });
+    }
+    */
+
+    $(document).ready(function() {
+        console.log('document.ready()...');
+        const welcome_message =initChat();
+        writeMessage(welcome_message,'bot');
+        $('#chatbot').on('click', '#chatbot-submit',function(e) {
+            console.log("Submit button click"); 
+            e.preventDefault();
+            message = $('#chatbot-input').val();
+            // message = message.toLowerCase();
+            writeMessage(message, 'user');
+            console.log("write user's question");
+            const resp = sendMessage(message, session);
+            console.log("sendMessage returned: ",resp);
+            writeMessage(resp.output.generic[0].text,"bot");
+        });
+
+    });        
+        // scroll to the bottom of chat box
+        function scrollToMessage() {
+            var msgBox = $('#chatbot-message');
+            var height = msgBox[0].scrollHeight;
+            msgBox.scrollTop(height);
+        }
+
+ 
+        function disableInput() {
+            $('#chatbot-input').addClass('disabled');
+            $('#chatbot-input').attr('disabled', 'disabled');
+            $('#chatbot-submit').addClass('disabled');
+            $('#chatbot-submit').attr('disabled', 'disabled');
+        }
+        
+        function botProcessing(){
+            botPre     = '<span class="message">Bot is writing... <i class="glyphicon glyphicon-pencil"></i></span>';
+            // botPre     = '<div class="spinner-border" role="status"></div> <div class="spinner-grow" role="status"></div>';
+            // botPre     = '<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>'
+            //botVal     = respond;
+            // botMessage = $('#chatbot-message').html() + '<p class="from-bot"><span class="user">Bot: </span>' + botPre + '</p>';
+            botMessage = $('#chatbot-message').html() + '<p class="from-bot">' + botPre + '</p>';
+            $('#chatbot-input').attr('placeholder', 'Bot is writing...');
+            $('#chatbot-message').html(botMessage);
+            scrollToMessage();
+        }
+
+        function writeMessage(message,from){
+            if (from == "user") {
+               response = $('#chatbot-message').html() + '<p class="from-user"><span class="user"> You: </span>' + message + '</p>';
+                $('#chatbot-message').html(response);
+                scrollToMessage();
+                $('#chatbot-input').val('');
+            }  else {
+                //disableInput();
+                response = $('#chatbot-message').html() + '<p class="from-bot"><span class="user"> Bot: </span>' + message + '</p>';
+                $('#chatbot-message').html(response);
+                scrollToMessage();
+                /*
+                $('#chatbot-input').removeClass('disabled');
+                $('#chatbot-input').removeAttr('disabled');
+                $('#chatbot-submit').removeClass('disabled');
+                $('#chatbot-submit').removeAttr('disabled');
+                */
+                //botProcessing();
+                /**
+                setTimeout(function(){},5000);
+                botMessageReplace = $('#chatbot-message .from-bot:last-child()');
+                botMessage = '<span class="user">Bot: </span>' + message;
+                $('#chatbot-input').attr('placeholder', 'message...');
+                botMessageReplace.html(botMessage);
+                scrollToMessage();
+                $('#chatbot-input').removeClass('disabled');
+                $('#chatbot-input').removeAttr('disabled');
+                $('#chatbot-submit').removeClass('disabled');
+                $('#chatbot-submit').removeAttr('disabled');
+                **/
+            }
+        }
+    //});
+
+</script>
+
+</body>
+</html>

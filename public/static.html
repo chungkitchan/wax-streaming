@@ -44,11 +44,12 @@
             </div><!-- .demo-widget-body -->
         </div><!-- #demo -->
     </div><!-- .container -->
+    <div> <button id="start">Start</button> </div>
 </div><!-- #main-demo-body -->
 
-<script src="../js/jquery.min.js"></script>
-<script src="../js/bootstrap.min.js"></script>
-<script src="../js/jquery.cookie.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.cookie.js"></script>
 <!--<script src="../phpjs/functions/array/in_array.js"></script>-->
 <script>
     var session;
@@ -65,70 +66,53 @@
         return session;
     }
 
-    function initChat(){
-        console.log("in initChat() calling getSession()....");
+    async function initChat(){
         session = getSession().session_id
-        console.log("got session: ",session);
-        const resp = sendMessage("",session);
+        const resp = await sendMessage("",session);
         return resp.output.generic[0].text;
     }
-    function sendMessage(message,session){
-        var resp;
+
+    async function sendMessage(message,session){
         const payload = {message: message, session: session};
-        $.ajax({
+        let resp = await $.ajax({
             url: '/api/message',
             contentType: 'application/json',
             dataType: 'json',
             data: JSON.stringify(payload),
             type: 'POST',   
-            async: false,             
-            success: function (data) {resp = data}
+            //async: false,             
+            //success: function (data) {resp = data}
         }); 
         return resp;        
     }
-    /*
-    function sendMessage(message,session){
-        return new Promise(function (resolve){
-            const payload = {message: message, session: session};
-            $.ajax({
-                url: '/api/message',
-                contentType: 'application/json',
-                dataType: 'json',
-                data: JSON.stringify(payload),
-                type: 'POST',   
-                async: false,             
-                success: function (data) {
-                    console.log(data);
-                    resolve(data)
-                }
-            }); 
-        });
-    }
-    */
 
-    $(document).ready(async function() {
-        const welcome_message =initChat();
-        writeMessage(welcome_message,'bot');
-        $('#chatbot').on('click', '#chatbot-submit',function(e) {
-            console.log("Submit button click"); 
+    $(document).ready(function() {
+        $('#chatbot').on('click', '#chatbot-submit', async function(e) {
             e.preventDefault();
             message = $('#chatbot-input').val();
             // message = message.toLowerCase();
             writeMessage(message, 'user');
-            console.log("write user's question");
-            const resp = sendMessage(message, session);
+            const resp = await sendMessage(message, session);
             console.log("sendMessage returned: ",resp);
             writeMessage(resp.output.generic[0].text,"bot");
         });
+        $('#start').click(async function(e){
+          await start();
+        });
 
+    });
+    async function start() {
         // scroll to the bottom of chat box
+        $("#chatbot-message").empty();
+        const welcome_message =  await initChat();
+        writeMessage(welcome_message,'bot');
+    }
         function scrollToMessage() {
             var msgBox = $('#chatbot-message');
             var height = msgBox[0].scrollHeight;
             msgBox.scrollTop(height);
         }
 
- 
         function disableInput() {
             $('#chatbot-input').addClass('disabled');
             $('#chatbot-input').attr('disabled', 'disabled');
@@ -180,40 +164,8 @@
                 **/
             }
         }
-    });
 
 </script>
-<!--
-<script>
-
-(function() {
-    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-    po.src = 'https://apis.google.com/js/plusone.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-})();
-
-!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
-
-(function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=205397789496743";
-    fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
-
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-19410112-1']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-
-</script>
--->
 
 </body>
 </html>
