@@ -94,7 +94,7 @@ app.post('/api/message', async function(req, res) {
             "skills": {
                 "main skill": {
                     "user_defined": {
-                         "user_group": "student"
+                         "user_group": "staff"
                     }
                 }
             }
@@ -190,7 +190,8 @@ app.get('/api/message_stream', async function(req, res) {
             "skills": {
                 "main skill": {
                     "user_defined": {
-                         "user_group": "student"
+                        "is_streaming": true,
+                         "user_group": "staff"
                     }
                 }
             }
@@ -269,7 +270,7 @@ app.get('/api/message_stream', async function(req, res) {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
