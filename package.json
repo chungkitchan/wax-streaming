@@ -16,6 +16,7 @@
     "express": "^4.21.2",
     "got": "^14.4.5",
     "ibm-watson": "^10.0.0",
+    "eventsource-parser": "^3.0.0",
     "morgan": "^1.10.0"
   }
 }
